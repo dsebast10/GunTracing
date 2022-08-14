@@ -12,7 +12,7 @@ trace_end_year <- max(traces$Year)
 
 
 ui <- fluidPage(
-  titlePanel("Hello Shiny!"),
+  titlePanel("Gun Tracing Dashboard v.2"),
     sidebarLayout(
       sidebarPanel(
        radioButtons("source_recovery",
@@ -45,29 +45,63 @@ ui <- fluidPage(
 
 
 server <- function(input, output){
-  reactive({print(input$state)})
 
   
   #Chart of gun sources by time
   output$source_time_chart <- renderPlot({
     
-    state_data <- traces %>%
-      filter(RecoveryState == input$state,
-             between(Year, input$years[1], input$years[2])) %>% 
-      {if (input$exclude_state) filter(., SourceState != input$state) else .} %>%
-      group_by(SourceState) %>%
-      mutate(GunsTotal = sum(Guns)) %>%
-      ungroup() %>%
-      arrange(desc(GunsTotal)) %>%
-      head(5*(input$years[2]-input$years[1] + 1))
-
+    if (input$source_recovery == "Source States") {
     
-    g <- ggplot(state_data, aes(x=Year, y=Guns))+
-      geom_line(aes(color=SourceState))+
-      geom_point(aes(color=SourceState))+
-      guides(color = guide_legend(reverse = F)) +
-      ggtitle(paste("Where guns recovered in", str_to_title(input$state), "were purchased, by Year Traced"))
-    g
+      state_data <- traces %>%
+        filter(RecoveryState == input$state,
+               between(Year, input$years[1], input$years[2])) %>% 
+        {if (input$exclude_state) filter(., SourceState != input$state) else .} %>%
+        group_by(SourceState) %>%
+        mutate(GunsTotal = sum(Guns)) %>%
+        ungroup() %>%
+        arrange(desc(GunsTotal)) %>%
+        head(5*(input$years[2]-input$years[1] + 1)) %>%
+        arrange(desc(Year), desc(Guns)) %>%
+        mutate(SourceState = factor(SourceState, levels = rev(SourceState %>% head(5))))
+      
+      g <- ggplot(state_data, aes(x=Year, y=Guns, color = SourceState, group = SourceState))+
+        geom_line(size = 2)+
+        geom_point(size = 4)+
+        scale_x_continuous("Trace Year",
+          labels = c(trace_start_year:trace_end_year), 
+          breaks = c(trace_start_year:trace_end_year))+
+        ggtitle(paste("Where guns recovered in", str_to_title(input$state), "were purchased, by Year Traced")) +
+        guides(color = guide_legend(reverse = T))
+      
+      g + theme_classic()
+      
+    } else {
+      state_data <- traces %>%
+        filter(SourceState == input$state,
+               between(Year, input$years[1], input$years[2])) %>% 
+        {if (input$exclude_state) filter(., RecoveryState != input$state) else .} %>%
+        group_by(RecoveryState) %>%
+        mutate(GunsTotal = sum(Guns)) %>%
+        ungroup() %>%
+        arrange(desc(GunsTotal)) %>%
+        head(5*(input$years[2]-input$years[1] + 1)) %>%
+        arrange(desc(Year), desc(Guns)) %>%
+        mutate(RecoveryState = factor(RecoveryState, levels = rev(RecoveryState %>% head(5))))
+      
+      
+      g <- ggplot(state_data, aes(x=Year, y=Guns, color = RecoveryState, group = RecoveryState))+
+        geom_line(size = 2)+
+        geom_point(size = 4)+
+        scale_x_continuous("Trace Year",
+                           labels = c(trace_start_year:trace_end_year), 
+                           breaks = c(trace_start_year:trace_end_year))+
+        ggtitle(paste("Where guns traced to", str_to_title(input$state), "were recovered, by Year Traced"))+
+        guides(color = guide_legend(reverse = T))
+      
+      g + theme_classic()
+    }
+    
+    
   })
 
     
