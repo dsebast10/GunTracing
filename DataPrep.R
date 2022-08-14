@@ -1,14 +1,3 @@
-# Libraries -------------------------------------------------------------
-
-library(shiny)
-library(shinydashboard)
-library(tidyverse)
-library(readxl)
-# library(plotly)
-# library(magrittr)
-# library(DT)
-# library(pdftools)
-
 # Import Traces -----------------------------------------------------------
 
 batch_import_files <- function(location) {
@@ -41,6 +30,7 @@ batch_import_files <- function(location) {
   df_trace
   
 }
+
+#Call Function to generate dataset
+
 traces <- batch_import_files("Data/")
-
-
