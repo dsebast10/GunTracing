@@ -1,0 +1,17 @@
+---
+title: "Project Ideas"
+author: "Daniel Sebastian"
+date: '2022-08-14'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+- Structure
+  - Convert to a a journalism concept - one long scrolling article
+- Products
+  - Add Maps
+  - Add stacked bar charts for each state
+  - Line chart for total amount of guns traced each year(with option to choose state)
